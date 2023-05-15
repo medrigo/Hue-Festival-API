@@ -5,10 +5,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Hue_Festival_API.Migrations
 {
-    /// <inheritdoc />
-    public partial class initdb : Migration
+    public partial class initDB : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -399,7 +397,6 @@ namespace Hue_Festival_API.Migrations
                 column: "ProgramId");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

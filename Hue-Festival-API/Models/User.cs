@@ -9,8 +9,5 @@
         public string PhoneNumber { get; set; }
         public string? Role { get; set; }
 
-        public List<LocationWishlist> LocationWishlist { get; set; }
-        public List<ProgramWishlist> ProgramWishlist { get; set; }
-
     }
 }

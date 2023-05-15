@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hue_Festival_API.Data;
 using Hue_Festival_API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hue_Festival_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class HelpMenusController : ControllerBase
     {
         private readonly DataContext _context;
