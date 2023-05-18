@@ -7,6 +7,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+using BC = BCrypt.Net.BCrypt;
+
 namespace Hue_Festival_API.Controllers
 {
     [Route("api/[controller]")]
@@ -37,8 +39,11 @@ namespace Hue_Festival_API.Controllers
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim("Id", user.Id.ToString()),
+                        new Claim("Name", user.Name),
+                        new Claim("Password", user.Password),
+                        new Claim("Email", user.Email),
                         new Claim("PhoneNumber", user.PhoneNumber),
-                        new Claim("Password", user.Password)
+                        new Claim("Role", user.Role)
                     };
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
                     var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -64,7 +69,14 @@ namespace Hue_Festival_API.Controllers
         [HttpGet]
         public async Task<User> GetUser(string phoneNumber, string password)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber && u.Password == password);
+            User user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+
+            if (user != null && BC.Verify(password, user.Password))
+            {
+                return user;
+            }
+
+            return null;
         }
 
     }

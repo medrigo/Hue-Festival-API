@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Hue_Festival_API.Data;
 using Hue_Festival_API.Models;
 
+using BC = BCrypt.Net.BCrypt;
 namespace Hue_Festival_API.Controllers
 {
     [Route("api/[controller]")]
@@ -90,6 +91,9 @@ namespace Hue_Festival_API.Controllers
           {
               return Problem("Entity set 'DataContext.Users'  is null.");
           }
+
+            user.Password = BC.HashPassword(user.Password);
+            
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
