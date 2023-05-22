@@ -1,10 +1,12 @@
 ﻿using Hue_Festival_API.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 using BC = BCrypt.Net.BCrypt;
@@ -17,6 +19,7 @@ namespace Hue_Festival_API.Controllers
     {
         public IConfiguration _configuration;
         private readonly DataContext _context;
+
 
         public JWTTokenController(IConfiguration configuration, DataContext context)
         {
@@ -31,7 +34,7 @@ namespace Hue_Festival_API.Controllers
             {
                 var userData = await GetUser(user.PhoneNumber, user.Password);
                 //var jwt = _configuration.GetSection("Jwt").Get<JwtHeaderParameterNames>();
-                if(user != null)
+                if (user != null)
                 {
                     var claims = new[]
                     {
@@ -61,7 +64,7 @@ namespace Hue_Festival_API.Controllers
                     return BadRequest("Invalid");
                 }
             }
-            else{
+            else {
                 return BadRequest("Invalid");
             }
         }
@@ -78,6 +81,44 @@ namespace Hue_Festival_API.Controllers
 
             return null;
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(string phoneNumber)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            user.PasswordResetToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+            user.ResetTokenExpires = DateTime.Now.AddDays(1);
+            await _context.SaveChangesAsync();
+            return Ok(user.PasswordResetToken);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == request.Token);
+            if (user == null || user.ResetTokenExpires < DateTime.Now)
+            {
+                return BadRequest("User not found");
+            }
+
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            user.Password = hashedPassword;
+
+            await _context.SaveChangesAsync();
+            return Ok("Password successfully reset :)");
+        }
+
+        //public string CreateRandomToken()
+        //{
+        //    return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+        //}
+
+
 
     }
 }
